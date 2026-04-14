@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Power BI — SENAI Orlando Laviero Ferraiuolo</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul: #004990;
+    --azul-claro: #0066cc;
+    --amarelo: #f5a623;
+    --amarelo-claro: #ffc93c;
+    --verde: #1a9e5c;
+    --vermelho: #d63031;
+    --cinza-bg: #f2f5f9;
+    --branco: #ffffff;
+    --texto: #1c2340;
+    --muted: #6b7280;
+    --borda: #dde3f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cinza-bg);
+    color: var(--texto);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: var(--azul);
+    color: white;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 30%;
+    width: 140px; height: 140px;
+    background: rgba(245,166,35,0.15);
+    border-radius: 50%;
+  }
+  .header-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px 24px 20px;
+  }
+  .school-name {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--amarelo-claro);
+    margin-bottom: 6px;
+  }
+  .quiz-title {
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .quiz-subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 20px;
+  }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress-section {
+    background: var(--azul);
+    padding: 0 24px 22px;
+  }
+  .progress-section-inner {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 8px;
+  }
+  .progress-label { font-weight: 700; color: var(--amarelo-claro); }
+  .progress-track {
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--amarelo), var(--amarelo-claro));
+    border-radius: 999px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  .step-dots {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.5);
+    transition: all 0.3s;
+  }
+  .dot.done { background: var(--amarelo); color: var(--azul); }
+  .dot.active { background: white; color: var(--azul); }
+
+  /* ===== MAIN ===== */
+  .main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px 20px 40px;
+    flex: 1;
+    width: 100%;
+  }
+
+  /* ===== SECTION BADGE ===== */
+  .section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--azul);
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 14px 5px 10px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  .section-badge .icon {
+    width: 22px; height: 22px;
+    background: var(--amarelo);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+
+  /* ===== QUESTION CARD ===== */
+  .question-card {
+    background: white;
+    border-radius: 16px;
+    border: 1.5px solid var(--borda);
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(0,73,144,0.06);
+    animation: fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .q-num {
+    font-size: 11px; font-weight: 800; letter-spacing: 1px;
+    color: var(--azul-claro); margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .q-text {
+    font-size: 16px; font-weight: 700;
+    line-height: 1.5; color: var(--texto);
+    margin-bottom: 20px;
+  }
+
+  /* ===== OPTIONS ===== */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: #f8faff;
+    border: 1.5px solid var(--borda);
+    border-radius: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .opt:hover:not(:disabled) {
+    border-color: var(--azul-claro);
+    background: #e8f0fb;
+    transform: translateX(3px);
+  }
+  .opt-letter {
+    min-width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--borda);
+    color: var(--muted);
+    font-weight: 800; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .opt-text { font-size: 14px; font-weight: 600; line-height: 1.4; padding-top: 4px; }
+  .opt.correct { background: #e8faf1; border-color: var(--verde); }
+  .opt.correct .opt-letter { background: var(--verde); color: white; }
+  .opt.wrong { background: #fdf0f0; border-color: var(--vermelho); }
+  .opt.wrong .opt-letter { background: var(--vermelho); color: white; }
+  .opt:disabled { cursor: default; }
+
+  /* ===== STEP BY STEP ===== */
+  .step-panel {
+    background: #f0f7ff;
+    border: 1.5px solid #c5daff;
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 16px;
+    animation: fadeUp 0.4s ease;
+  }
+  .step-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .step-icon {
+    width: 34px; height: 34px;
+    background: var(--azul);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: white;
+  }
+  .step-title { font-size: 14px; font-weight: 800; color: var(--azul); }
+  .step-sub { font-size: 12px; color: var(--muted); }
+
+  .steps-list { display: flex; flex-direction: column; gap: 12px; }
+  .step-item {
+    display: flex; gap: 12px;
+    opacity: 0;
+    transform: translateX(-10px);
+    animation: slideIn 0.35s ease forwards;
+  }
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .step-num {
+    min-width: 26px; height: 26px;
+    background: var(--azul);
+    color: white; border-radius: 8px;
+    font-size: 12px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .step-content { flex: 1; }
+  .step-action {
+    font-size: 13px; font-weight: 700; color: var(--texto);
+    margin-bottom: 3px;
+  }
+  .step-detail {
+    font-size: 12px; color: var(--muted); line-height: 1.5;
+  }
+  .code-block {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    background: #1c2340;
+    color: #a8d8ff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-top: 6px;
+    white-space: pre-wrap;
+    border-left: 3px solid var(--amarelo);
+  }
+  .result-tag {
+    display: inline-block;
+    background: #e8faf1; color: var(--verde);
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 999px;
+    margin-top: 8px;
+    border: 1px solid #99ddb9;
+  }
+  .result-tag.warn { background: #fff8e6; color: #b86e00; border-color: #ffd580; }
+
+  /* ===== FEEDBACK ===== */
+  .feedback-bar {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px; font-weight: 700;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+    animation: fadeUp 0.3s ease;
+  }
+  .feedback-bar.correct { background: #e8faf1; color: #0e7a47; border: 1.5px solid #99ddb9; }
+  .feedback-bar.wrong { background: #fdf0f0; color: #c0392b; border: 1.5px solid #f5aaaa; }
+
+  /* ===== NAV BUTTON ===== */
+  .btn-next {
+    background: var(--azul);
+    color: white;
+    border: none;
+    padding: 13px 30px;
+    border-radius: 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px; font-weight: 800;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-next:hover { background: var(--azul-claro); transform: translateY(-2px); }
+  .btn-next:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  /* ===== SURPRISE / FINAL ===== */
+  #final-screen {
+    display: none;
+    text-align: center;
+    animation: fadeUp 0.5s ease;
+  }
+  .trophy-wrap {
+    background: linear-gradient(135deg, var(--azul) 0%, var(--azul-claro) 100%);
+    border-radius: 20px;
+    padding: 48px 32px;
+    margin-bottom: 24px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .trophy-wrap::before {
+    content: '🎓';
+    position: absolute; top: -20px; right: -20px;
+    font-size: 120px; opacity: 0.08;
+  }
+  .trophy-emoji { font-size: 72px; margin-bottom: 16px; }
+  .final-title { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+  .final-sub { font-size: 16px; opacity: 0.85; margin-bottom: 24px; }
+
+  /* countdown */
+  .countdown-wrap {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    border: 2px solid var(--amarelo);
+    margin-bottom: 20px;
+  }
+  .countdown-label {
+    font-size: 13px; font-weight: 700;
+    color: var(--muted); margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .countdown-timer {
+    font-size: 42px; font-weight: 900;
+    color: var(--azul); font-family: 'Source Code Pro', monospace;
+    letter-spacing: 4px;
+  }
+  .countdown-sub {
+    font-size: 12px; color: var(--muted); margin-top: 8px;
+  }
+
+  /* ===== SURPRISE OVERLAY ===== */
+  #surprise-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: #000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #surprise-overlay.active { display: flex; }
+
+  /* animated bg particles */
+  .s-particles {
+    position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  }
+  .s-particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: floatUp linear infinite;
+    opacity: 0;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(110vh) scale(0.5); opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-20vh) scale(1.2); opacity: 0; }
+  }
+
+  /* mystery box */
+  .s-box {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    padding: 20px;
+    max-width: 560px; width: 100%;
+  }
+
+  /* PHASE 1 — lock */
+  #s-phase1 { animation: fadeIn 0.6s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+
+  .s-lock-icon {
+    font-size: 88px;
+    animation: lockPulse 1.5s ease-in-out infinite;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 20px rgba(245,166,35,0.6));
+  }
+  @keyframes lockPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(245,166,35,0.5)); }
+    50%       { transform: scale(1.06); filter: drop-shadow(0 0 36px rgba(245,166,35,0.9)); }
+  }
+  .s-lock-title {
+    font-size: 28px; font-weight: 900; color: white;
+    letter-spacing: -0.5px; margin-bottom: 10px;
+  }
+  .s-lock-sub { font-size: 15px; color: rgba(255,255,255,0.55); margin-bottom: 32px; line-height: 1.6; }
+
+  /* unlock button */
+  .s-unlock-btn {
+    background: var(--amarelo);
+    color: #1c1c1c;
+    border: none;
+    padding: 18px 44px;
+    border-radius: 16px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px; font-weight: 900;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    box-shadow: 0 0 0 0 rgba(245,166,35,0.5);
+    animation: btnGlow 2s ease-in-out infinite;
+    transition: transform 0.15s;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .s-unlock-btn:hover { transform: scale(1.05); }
+  @keyframes btnGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.5); }
+    50%       { box-shadow: 0 0 0 16px rgba(245,166,35,0); }
+  }
+
+  /* PHASE 2 — countdown reveal */
+  #s-phase2 { display: none; animation: fadeIn 0.5s ease; }
+  .s-phase2-title {
+    font-size: 15px; font-weight: 800; color: var(--amarelo);
+    letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .s-big-timer {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 72px; font-weight: 900;
+    color: white;
+    letter-spacing: 8px;
+    line-height: 1;
+    margin-bottom: 8px;
+    text-shadow: 0 0 40px rgba(245,166,35,0.4);
+    transition: color 0.5s;
+  }
+  .s-big-timer.urgent { color: var(--vermelho); text-shadow: 0 0 40px rgba(214,48,49,0.6); animation: timerShake 0.4s ease-in-out infinite; }
+  @keyframes timerShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+  .s-timer-label { font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 32px; }
+
+  /* the reveal card */
+  .s-reveal-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 28px 32px;
+    width: 100%;
+    backdrop-filter: blur(8px);
+  }
+  .s-reveal-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--amarelo); color: #1c1c1c;
+    font-size: 11px; font-weight: 900;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  .s-reveal-title {
+    font-size: 20px; font-weight: 900; color: white;
+    margin-bottom: 8px; line-height: 1.3;
+  }
+  .s-reveal-desc {
+    font-size: 13px; color: rgba(255,255,255,0.6);
+    line-height: 1.7; margin-bottom: 20px;
+  }
+  .s-drive-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: white; color: var(--azul);
+    padding: 16px 28px; border-radius: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px; font-weight: 900;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none; cursor: pointer;
+    width: 100%; justify-content: center;
+  }
+  .s-drive-btn:hover { background: var(--amarelo-claro); transform: translateY(-2px); }
+  .s-drive-btn.destroyed {
+    background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3);
+    cursor: not-allowed; transform: none;
+  }
+
+  /* destruction warning bar */
+  .s-destruct-bar {
+    background: rgba(214,48,49,0.15);
+    border: 1px solid rgba(214,48,49,0.4);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 14px;
+    font-size: 12px; color: rgba(255,255,255,0.7);
+    font-weight: 700;
+  }
+  .s-destruct-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--vermelho);
+    animation: blink 1s ease-in-out infinite;
+    min-width: 8px;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+  .s-destroyed-msg {
+    display: none;
+    background: rgba(214,48,49,0.2);
+    border: 1px solid rgba(214,48,49,0.5);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    margin-top: 14px;
+  }
+  .s-destroyed-msg .big { font-size: 48px; margin-bottom: 12px; }
+  .s-destroyed-msg p { color: white; font-size: 14px; font-weight: 700; line-height: 1.6; }
+
+  /* close btn */
+  .s-close-btn {
+    position: absolute; top: 20px; right: 20px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white; border-radius: 10px;
+    width: 40px; height: 40px;
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+    font-family: monospace;
+    z-index: 3;
+  }
+  .s-close-btn:hover { background: rgba(255,255,255,0.2); }
+
+  /* surprise trigger button (shown in final screen) */
+  .surprise-trigger-btn {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, #1c2340, #004990);
+    color: white; border: 2px solid var(--amarelo);
+    padding: 20px 36px; border-radius: 20px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 20px; font-weight: 900;
+    cursor: pointer; margin-top: 12px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 0 0 0 rgba(245,166,35,0.4);
+    animation: triggerPulse 2s ease-in-out infinite;
+    transition: transform 0.15s;
+    width: 100%;
+    justify-content: center;
+  }
+  .surprise-trigger-btn:hover { transform: scale(1.03); }
+  @keyframes triggerPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
+    50%       { box-shadow: 0 0 0 20px rgba(245,166,35,0); }
+  }
+  .surprise-trigger-wrap {
+    background: white; border-radius: 20px; padding: 28px;
+    border: 1.5px solid var(--borda); text-align: center;
+    margin-bottom: 20px;
+  }
+  .surprise-trigger-label {
+    font-size: 12px; font-weight: 800; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;
+  }
+  .surprise-trigger-title {
+    font-size: 22px; font-weight: 900; color: var(--texto); margin-bottom: 6px;
+  }
+  .surprise-trigger-sub {
+    font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5;
+  }
+
+  /* confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    pointer-events: none;
+    animation: confettiFall linear forwards;
+    z-index: 9999;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes surprisePop {
+    0% { opacity:0; transform: scale(0.85); }
+    100% { opacity:1; transform: scale(1); }
+  }
+  @keyframes bombTick {
+    0%,49% { transform: rotate(-8deg); }
+    50%,100% { transform: rotate(8deg); }
+  }
+  @keyframes bombSwing {
+    0%,100% { transform: rotate(-12deg) scale(1); }
+    50% { transform: rotate(12deg) scale(1.08); }
+  }
+  @keyframes bombPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.6), 0 0 0 0 rgba(214,48,49,0); }
+    50% { box-shadow: 0 0 0 16px rgba(245,166,35,0), 0 0 32px 8px rgba(214,48,49,0.15); }
+  }
+  @keyframes triggerPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.5); }
+    50%       { box-shadow: 0 0 0 18px rgba(245,166,35,0); }
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--azul);
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  footer span { color: var(--amarelo-claro); }
+
+  /* ===== HIDDEN ===== */
+  .hidden { display: none !important; }
+
+  /* ===== DATA PREVIEW ===== */
+  .data-preview {
+    background: #f8faff;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    font-size: 12px;
+  }
+  .data-preview-title {
+    font-size: 11px; font-weight: 800; color: var(--azul);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    background: var(--azul); color: white;
+    font-size: 10px; font-weight: 700;
+    padding: 5px 8px; text-align: left;
+  }
+  .data-table td {
+    padding: 4px 8px; font-size: 11px;
+    border-bottom: 1px solid var(--borda);
+    color: var(--texto);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:nth-child(even) td { background: #f2f5f9; }
+
+  .tag-file {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #e8f0fb; color: var(--azul-claro);
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 6px;
+    margin-bottom: 10px; margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="school-name">🎓 Escola SENAI "Orlando Laviero Ferraiuolo"</div>
+    <div class="quiz-title">Quiz Prático — Microsoft Power BI</div>
+    <div class="quiz-subtitle">Limpeza de dados · Relacionamentos · DAX · Visualizações</div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-section">
+  <div class="progress-section-inner">
+    <div class="progress-meta">
+      <span>Progresso do Quiz</span>
+      <span class="progress-label" id="prog-label">0 / 10 questões</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill"></div>
+    </div>
+    <div class="step-dots" id="step-dots"></div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- QUIZ QUESTIONS -->
+  <div id="quiz-area"></div>
+
+  <!-- FINAL SCREEN -->
+  <div id="final-screen" style="display:none;">
+
+    <!-- TROPHY HERO -->
+    <div class="trophy-wrap">
+      <div class="trophy-emoji">🏆</div>
+      <div class="final-title">Quiz Concluído!</div>
+      <div class="final-sub">Você finalizou todas as 10 questões do Quiz Power BI.<br>Parabéns pela dedicação!</div>
+    </div>
+
+    <!-- QUOTE CARD -->
+    <div style="background: linear-gradient(135deg, #1c2340 0%, #004990 100%); border-radius: 20px; padding: 32px 28px; margin-bottom: 20px; position: relative; overflow: hidden;">
+      <div style="position:absolute;top:-20px;left:-20px;font-size:120px;opacity:0.07;line-height:1;">"</div>
+      <div style="position:absolute;bottom:-30px;right:-10px;font-size:120px;opacity:0.07;line-height:1;">"</div>
+      <p style="font-family:'Nunito',sans-serif; font-size:18px; font-weight:800; color:white; line-height:1.6; text-align:center; position:relative; z-index:1; font-style:italic; margin-bottom:16px;">
+        "Nós somos o que fazemos repetidamente. A excelência, então, não é um ato, mas um hábito."
+      </p>
+      <p style="font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; color:#f5a623; text-align:center; letter-spacing:2px; text-transform:uppercase; position:relative; z-index:1;">— Aristóteles</p>
+    </div>
+
+    <!-- SURPRISE BUTTON (locked until clicked) -->
+    <div id="surprise-locked" style="background:white; border-radius:20px; padding:32px 24px; border:2px dashed #f5a623; text-align:center; margin-bottom:20px; cursor:pointer;" onclick="revealSurprise()">
+      <div style="font-size:56px; margin-bottom:12px; animation: bounce 1s ease-in-out infinite;">🎁</div>
+      <div style="font-size:11px; font-weight:800; color:#6b7280; text-transform:uppercase; letter-spacing:2px; margin-bottom:8px;">Recompensa especial</div>
+      <div style="font-size:22px; font-weight:900; color:#1c2340; margin-bottom:8px;">Tem uma surpresa para você!</div>
+      <div style="font-size:13px; color:#6b7280; margin-bottom:22px; line-height:1.5;">Você concluiu o quiz. Clique para revelar seu presente.</div>
+      <div style="display:inline-flex; align-items:center; gap:10px; background:#004990; color:white; padding:16px 36px; border-radius:14px; font-family:'Nunito',sans-serif; font-size:17px; font-weight:900; box-shadow:0 0 0 0 rgba(245,166,35,0.5); animation:triggerPulse 2s ease-in-out infinite;">
+        ✨ Revelar Surpresa
+      </div>
+    </div>
+
+    <!-- SURPRISE REVEALED (hidden initially) -->
+    <div id="surprise-revealed" style="display:none; animation: surprisePop 0.6s cubic-bezier(.17,.67,.35,1.4) forwards;">
+
+      <!-- Fireworks header -->
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="font-size:40px; letter-spacing:8px;">🎆🎇✨🎉🥳</div>
+        <div style="font-size:13px; font-weight:800; color:#004990; letter-spacing:2px; text-transform:uppercase; margin-top:8px;">Material Exclusivo Liberado!</div>
+      </div>
+
+      <!-- Countdown -->
+      <div style="background:white; border-radius:16px; padding:24px; border:2px solid #f5a623; margin-bottom:20px; text-align:center; box-shadow: 0 4px 24px rgba(245,166,35,0.15);">
+        <div style="font-size:11px; font-weight:800; color:#6b7280; text-transform:uppercase; letter-spacing:2px; margin-bottom:10px;">⏳ Este link se autodestrói em</div>
+        <div id="countdown-timer" style="font-family:'Source Code Pro',monospace; font-size:46px; font-weight:900; color:#004990; letter-spacing:6px;">--:--:--</div>
+        <div style="font-size:12px; color:#6b7280; margin-top:8px;">Disponível somente até as <strong>22h00 de hoje</strong> — não perca!</div>
+        <!-- bomb animation -->
+        <div id="bomb-wrap" style="margin-top:12px; font-size:28px; animation: bombTick 1s steps(1) infinite;">💣</div>
+      </div>
+
+      <!-- Drive bomb button -->
+      <div style="text-align:center; margin-bottom:20px;">
+        <a id="drive-link" href="https://drive.google.com/drive/folders/1ouBIsQXSHuiuQ5tNLY2Hf03Vs_V12ZFA?usp=sharing" target="_blank"
+          style="display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; background:#1c2340; color:white; padding:28px 48px; border-radius:24px; font-family:'Nunito',sans-serif; text-decoration:none; border:3px solid #f5a623; animation:bombPulse 0.8s ease-in-out infinite; cursor:pointer;">
+          <span style="font-size:52px; animation:bombSwing 0.6s ease-in-out infinite; display:block;">💣</span>
+          <span style="font-size:13px; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:#f5a623; margin-top:4px;">Clique antes que exploda!</span>
+        </a>
+        <div id="destroyed-msg" style="display:none; background:#fdf0f0; color:#c0392b; border:1.5px solid #f5aaaa; border-radius:12px; padding:18px; font-size:14px; font-weight:700; margin-top:16px; text-align:center;">
+          💥 <strong>DESTRUÍDO.</strong> O link expirou às 22h00. O conteúdo não está mais disponível.<br>
+          <span style="font-size:12px; font-weight:500;">Fique atento às próximas aulas para novos materiais!</span>
+        </div>
+      </div>
+
+    </div><!-- /surprise-revealed -->
+
+  </div><!-- /final-screen -->
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  Escola SENAI "Orlando Laviero Ferraiuolo" &nbsp;|&nbsp; Desenvolvido por <span>Rafael Pereira</span> &nbsp;|&nbsp; Microsoft Power BI
+</footer>
+
+<script>
+const QUESTIONS = [
+  // =================== BLOCO 1 — POWER QUERY ===================
+  {
+    section: "Power Query — Limpeza de Dados",
+    sectionIcon: "🧹",
+    num: 1,
+    file: "fVendas_Quiz.xlsx",
+    fileType: "xlsx",
+    tablePreview: {
+      title: "fVendas_Quiz.xlsx — Primeiras linhas (antes da limpeza)",
+      headers: ["Linha 1", "Linha 2", "Linha 3"],
+      rows: [
+        ["SISTEMA DE VENDAS — EXPORTAÇÃO MENSAL", "", ""],
+        ["Gerado em: 31/12/2024", "", ""],
+        ["ID_VENDA", "DATA_VENDA", "ID_VENDEDOR..."],
+        ["1", "08/01/2024", "1..."],
+      ]
+    },
+    text: "Ao importar o arquivo <strong>fVendas_Quiz.xlsx</strong> no Power Query, você percebe que as 2 primeiras linhas são cabeçalhos desnecessários do sistema. Qual é o procedimento correto para limpar essa tabela?",
+    options: [
+      "Deletar as linhas manualmente no Excel antes de importar",
+      "No Power Query: usar 'Remover Linhas Superiores' (quantidade: 2) e depois 'Usar Primeira Linha como Cabeçalho'",
+      "Ignorar as linhas extras — o Power BI corrige automaticamente",
+      "Usar a opção 'Filtrar Linhas' para esconder a linha 1 e 2"
+    ],
+    correct: 1,
+    steps: [
+      { action: "Abrir Power Query", detail: "No Power BI Desktop → aba Página Inicial → clique em 'Transformar Dados'", code: null },
+      { action: "Selecionar a tabela fVendas_Quiz", detail: "No painel esquerdo, clique na query 'fVendas_Quiz'", code: null },
+      { action: "Remover Linhas Superiores", detail: "Aba Página Inicial → Remover Linhas → Remover Linhas Superiores → digite 2 → OK", code: null },
+      { action: "Promover cabeçalho", detail: "Aba Transformar → 'Usar Primeira Linha como Cabeçalho' (ou Página Inicial → mesmo botão)", code: null },
+      { action: "Verificar resultado", detail: "A tabela deve ter como primeira linha: ID_VENDA | DATA_VENDA | ID_VENDEDOR | ID_PRODUTO | ID_REGIAO | VALOR_VENDA", code: null },
+      { action: "Fechar e Aplicar", detail: "Página Inicial → 'Fechar e Aplicar' para salvar as transformações", code: null, result: "Tabela limpa com 6 colunas corretas" },
+    ]
+  },
+  {
+    section: "Power Query — Tipos de Dados",
+    sectionIcon: "🔧",
+    num: 2,
+    file: "fVendas_Quiz.xlsx",
+    fileType: "xlsx",
+    tablePreview: null,
+    text: "Após a limpeza, a coluna <strong>DATA_VENDA</strong> aparece como tipo <em>Texto</em> (ABC) em vez de Data. Qual ação correta no Power Query?",
+    options: [
+      "Deixar como Texto — o DAX consegue calcular mesmo assim",
+      "Clicar no ícone de tipo da coluna → selecionar 'Data'",
+      "Criar uma nova coluna e usar a fórmula =DATEVALUE()",
+      "Excluir a coluna e digitar as datas novamente"
+    ],
+    correct: 1,
+    steps: [
+      { action: "Localizar a coluna DATA_VENDA", detail: "No Power Query, clique na coluna DATA_VENDA para selecioná-la", code: null },
+      { action: "Clicar no ícone de tipo", detail: "À esquerda do nome da coluna há um ícone 'ABC' (texto). Clique nele.", code: null },
+      { action: "Selecionar tipo 'Data'", detail: "No menu que aparece, escolha 'Data'. Confirme 'Substituir Atual' se solicitado.", code: null },
+      { action: "Verificar a conversão", detail: "A coluna deve exibir datas no formato dd/mm/aaaa e o ícone mudará para um calendário 📅", code: null, result: "Tipo convertido: Data ✓" },
+    ]
+  },
+  {
+    section: "Power Query — Coluna Condicional",
+    sectionIcon: "➕",
+    num: 3,
+    file: "dVendedores.json",
+    fileType: "json",
+    tablePreview: {
+      title: "dVendedores.json",
+      headers: ["ID_VENDEDOR", "NOME", "META_MENSAL", "CARGO"],
+      rows: [
+        ["1", "Carlos Andrade", "15000", "Vendedor Sênior"],
+        ["2", "Patrícia Lima", "18000", "Vendedor Pleno"],
+        ["3", "Roberto Nunes", "12000", "Vendedor Júnior"],
+        ["4", "Simone Castro", "14000", "Vendedor Pleno"],
+      ]
+    },
+    text: "Na tabela <strong>dVendedores</strong>, crie uma coluna condicional chamada <strong>NIVEL_META</strong> que classifique: META ≥ 16.000 = 'Alta', META entre 13.000 e 15.999 = 'Média', META &lt; 13.000 = 'Baixa'. Qual caminho correto?",
+    options: [
+      "Power Query → Aba Página Inicial → Nova Coluna → Coluna Condicional",
+      "Power Query → Aba Adicionar Coluna → Coluna Condicional",
+      "Power Query → Aba Transformar → Inserir Coluna → Condicional",
+      "Criar a fórmula diretamente no DAX com IF() na tabela de medidas"
+    ],
+    correct: 1,
+    steps: [
+      { action: "Abrir dVendedores no Power Query", detail: "Selecione a query dVendedores no painel esquerdo", code: null },
+      { action: "Navegar até Adicionar Coluna", detail: "Clique na aba 'Adicionar Coluna' na faixa de opções", code: null },
+      { action: "Inserir Coluna Condicional", detail: "Clique em 'Coluna Condicional' — uma janela se abre", code: null },
+      { action: "Configurar as regras", detail: "Nome da coluna: NIVEL_META\n• Se META_MENSAL >= 16000 → 'Alta'\n• Senão Se META_MENSAL >= 13000 → 'Média'\n• Senão → 'Baixa'", code: "Nome: NIVEL_META\n\nRegra 1: META_MENSAL >= 16000 → \"Alta\"\nRegra 2: META_MENSAL >= 13000 → \"Média\"\nPadrão: \"Baixa\"" },
+      { action: "Confirmar com OK", detail: "Clique OK e veja a nova coluna NIVEL_META aparecer", code: null, result: "Resultado esperado: Alta=1 | Média=2 | Baixa=1" },
+    ]
+  },
+
+  // =================== BLOCO 2 — RELACIONAMENTOS ===================
+  {
+    section: "Relacionamentos — Criar Modelo Estrela",
+    sectionIcon: "🔗",
+    num: 4,
+    file: "Todas as tabelas",
+    tablePreview: {
+      title: "Chaves de relacionamento",
+      headers: ["Tabela", "Chave Primária", "Liga com"],
+      rows: [
+        ["fVendas", "ID_VENDA", "(fato central)"],
+        ["dVendedores", "ID_VENDEDOR", "fVendas.ID_VENDEDOR"],
+        ["dProdutos", "ID_PRODUTO", "fVendas.ID_PRODUTO"],
+        ["dRegioes", "ID_REGIAO", "fVendas.ID_REGIAO"],
+      ]
+    },
+    text: "No modelo de dados, a tabela <strong>fVendas</strong> é a tabela fato e as demais são dimensões. Como criar o relacionamento entre <strong>fVendas</strong> e <strong>dVendedores</strong>?",
+    options: [
+      "Aba Modelagem → Gerenciar Relacionamentos → Novo → selecionar as duas tabelas e as colunas ID_VENDEDOR",
+      "Editar a tabela fVendas no Power Query e fazer um Merge com dVendedores",
+      "Criar uma medida DAX que conecta as duas tabelas com RELATED()",
+      "Não é necessário — o Power BI detecta automaticamente pelo nome da coluna"
+    ],
+    correct: 0,
+    steps: [
+      { action: "Acessar a Exibição de Modelo", detail: "No painel lateral esquerdo, clique no ícone 'Exibição de Modelo' (3 tabelas conectadas)", code: null },
+      { action: "Opção 1 — Arrastar e Soltar (mais visual)", detail: "Na Exibição de Modelo, localize fVendas e dVendedores. Arraste a coluna ID_VENDEDOR de fVendas até ID_VENDEDOR de dVendedores.", code: null },
+      { action: "Opção 2 — Gerenciar Relacionamentos", detail: "Aba Modelagem → 'Gerenciar Relacionamentos' → 'Novo' → selecionar tabelas e colunas", code: null },
+      { action: "Confirmar as configurações", detail: "Cardinalidade: Muitos para Um (*:1) | Direção de filtro cruzado: Único | Ativo: ✓ Sim", code: null },
+      { action: "Repetir para todas as dimensões", detail: "Criar mais 2 relacionamentos:\n• fVendas[ID_PRODUTO] → dProdutos[ID_PRODUTO]\n• fVendas[ID_REGIAO] → dRegioes[ID_REGIAO]", code: null, result: "3 relacionamentos ativos criados ✓" },
+    ]
+  },
+  {
+    section: "Relacionamentos — Verificar Integridade",
+    sectionIcon: "✅",
+    num: 5,
+    file: "Exibição de Modelo",
+    tablePreview: null,
+    text: "Como confirmar visualmente que os relacionamentos estão corretos e ativos na Exibição de Modelo do Power BI?",
+    options: [
+      "Verificar se as tabelas aparecem com bordas verdes na exibição de relatório",
+      "Na Exibição de Modelo, observar se há linhas conectando as tabelas; linha sólida = ativo, números 1 e * indicam a cardinalidade",
+      "Executar a fórmula =RELATED() e verificar se retorna erro",
+      "Abrir o Power Query e verificar se as tabelas têm a mesma quantidade de linhas"
+    ],
+    correct: 1,
+    steps: [
+      { action: "Acessar Exibição de Modelo", detail: "Clique no ícone de modelo no painel esquerdo", code: null },
+      { action: "Verificar as linhas de relacionamento", detail: "Linhas que conectam tabelas indicam relacionamentos. Linha sólida = ativo | Linha tracejada = inativo", code: null },
+      { action: "Identificar a cardinalidade", detail: "O símbolo '1' aparece no lado da chave primária (dimensão) e '*' no lado da chave estrangeira (fato).\n• dVendedores (1) ——— (*) fVendas ✓", code: null },
+      { action: "Confirmar direção do filtro", detail: "A seta (→) indica a direção do filtro cruzado. No modelo estrela, a seta deve ir da dimensão para a fato.", code: null },
+      { action: "Teste rápido no relatório", detail: "Crie um visual de tabela com NOME (dVendedores) e VALOR_VENDA (fVendas). Se os valores filtrarem corretamente por vendedor, o relacionamento está funcionando!", code: null, result: "Modelo estrela íntegro ✓" },
+    ]
+  },
+
+  // =================== BLOCO 3 — DAX MEDIDAS ===================
+  {
+    section: "DAX — Total de Vendas (Medida)",
+    sectionIcon: "📐",
+    num: 6,
+    file: "fVendas_Quiz.xlsx",
+    tablePreview: null,
+    text: "Crie uma medida chamada <strong>Total Vendas</strong> que some todos os valores da coluna <strong>VALOR_VENDA</strong> da tabela <strong>fVendas</strong>. Qual é a fórmula correta?",
+    options: [
+      "Total Vendas = SUM(fVendas[VALOR_VENDA])",
+      "Total Vendas = SOMA(fVendas.VALOR_VENDA)",
+      "Total Vendas = COUNT(fVendas[VALOR_VENDA])",
+      "Total Vendas = SUMIF(fVendas[VALOR_VENDA])"
+    ],
+    correct: 0,
+    steps: [
+      { action: "Selecionar a tabela de destino", detail: "No painel de Dados (lado direito), clique com o botão direito em 'fVendas' → 'Nova Medida'", code: null },
+      { action: "Digitar a fórmula DAX", detail: "Na barra de fórmulas que aparece, digite:", code: "Total Vendas = SUM(fVendas[VALOR_VENDA])" },
+      { action: "Confirmar com Enter", detail: "Pressione Enter ou clique no ✓ na barra de fórmulas", code: null },
+      { action: "Verificar na tabela de campos", detail: "A medida aparece com o ícone de calculadora (∑) em 'fVendas' no painel de dados", code: null },
+      { action: "Testar o resultado", detail: "Arraste a medida para um visual de Cartão. O valor total deve ser a soma de todos os VALOR_VENDA", code: null, result: "Medida criada com sucesso ✓" },
+    ]
+  },
+  {
+    section: "DAX — Contagem de Vendas (Medida)",
+    sectionIcon: "📐",
+    num: 7,
+    file: "fVendas_Quiz.xlsx",
+    tablePreview: null,
+    text: "Crie uma medida chamada <strong>Qtd Vendas</strong> que conte o número de transações distintas (ID_VENDA) na tabela fVendas. Qual fórmula utilizar?",
+    options: [
+      "Qtd Vendas = SUM(fVendas[ID_VENDA])",
+      "Qtd Vendas = DISTINCTCOUNT(fVendas[ID_VENDA])",
+      "Qtd Vendas = MAX(fVendas[ID_VENDA])",
+      "Qtd Vendas = AVERAGE(fVendas[ID_VENDA])"
+    ],
+    correct: 1,
+    steps: [
+      { action: "Nova medida na tabela fVendas", detail: "Botão direito em fVendas → 'Nova Medida'", code: null },
+      { action: "Digitar a fórmula", detail: "Use DISTINCTCOUNT para contar IDs únicos (evita duplicatas):", code: "Qtd Vendas = DISTINCTCOUNT(fVendas[ID_VENDA])" },
+      { action: "Por que DISTINCTCOUNT?", detail: "DISTINCTCOUNT conta valores únicos. COUNT contaria todas as linhas incluindo possíveis duplicatas. Para IDs de venda, cada ID deve ser único.", code: null },
+      { action: "Confirmar e testar", detail: "Adicione a medida a um visual de Cartão para verificar o número total de vendas registradas", code: null, result: "Medida criada ✓" },
+    ]
+  },
+  {
+    section: "DAX — Média de Vendas (Medida)",
+    sectionIcon: "📐",
+    num: 8,
+    file: "fVendas_Quiz.xlsx",
+    tablePreview: null,
+    text: "Crie uma medida chamada <strong>Ticket Médio</strong> que calcule a média dos valores de venda. Qual é a fórmula correta?",
+    options: [
+      "Ticket Médio = AVERAGE(fVendas[VALOR_VENDA])",
+      "Ticket Médio = [Total Vendas] / COUNT(fVendas[VALOR_VENDA])",
+      "Ticket Médio = MEDIAN(fVendas[VALOR_VENDA])",
+      "As opções A e B estão corretas e produzem o mesmo resultado"
+    ],
+    correct: 3,
+    steps: [
+      { action: "Entender as duas fórmulas", detail: "Ambas calculam a média aritmética dos valores de venda. AVERAGE() é a forma direta; a divisão é a forma manual — ambas corretas.", code: null },
+      { action: "Fórmula recomendada (AVERAGE)", detail: "Mais simples e legível:", code: "Ticket Médio = AVERAGE(fVendas[VALOR_VENDA])" },
+      { action: "Fórmula alternativa válida", detail: "Usando medidas existentes:", code: "Ticket Médio = [Total Vendas] / COUNTROWS(fVendas)" },
+      { action: "Diferença com MEDIAN", detail: "MEDIAN retorna o valor do meio da distribuição (não a média). Para ticket médio, use AVERAGE.", code: null },
+      { action: "Testar no visual", detail: "Adicione ao visual de Cartão e compare com o Total Vendas ÷ Qtd Vendas para confirmar.", code: null, result: "Medida verificada ✓" },
+    ]
+  },
+
+  // =================== BLOCO 4 — COLUNA CALCULADA ===================
+  {
+    section: "DAX — Coluna Calculada",
+    sectionIcon: "🧮",
+    num: 9,
+    file: "fVendas_Quiz.xlsx",
+    tablePreview: {
+      title: "dProdutos_Quiz.xml",
+      headers: ["ID_PRODUTO", "NOME_PRODUTO", "PRECO_UNITARIO"],
+      rows: [
+        ["1", "Notebook Pro 15", "3800"],
+        ["2", "Cadeira Gamer", "1200"],
+        ["3", "Monitor 27pol", "2100"],
+      ]
+    },
+    text: "Crie uma <strong>coluna calculada</strong> na tabela <strong>fVendas</strong> chamada <strong>FAIXA_VALOR</strong>: se VALOR_VENDA > 2000 = 'Alto Valor', senão = 'Padrão'. Qual fórmula usar?",
+    options: [
+      "FAIXA_VALOR = IF(fVendas[VALOR_VENDA] > 2000, \"Alto Valor\", \"Padrão\")",
+      "FAIXA_VALOR = SWITCH(fVendas[VALOR_VENDA], >2000, \"Alto Valor\", \"Padrão\")",
+      "FAIXA_VALOR = IIF(VALOR_VENDA > 2000, \"Alto Valor\", \"Padrão\")",
+      "FAIXA_VALOR = CALCULATE(IF(VALOR_VENDA > 2000, \"Alto Valor\"))"
+    ],
+    correct: 0,
+    steps: [
+      { action: "Diferença: Coluna vs Medida", detail: "Coluna Calculada: calculada linha por linha e armazenada no modelo | Medida: calculada dinamicamente no contexto do visual", code: null },
+      { action: "Criar a coluna calculada", detail: "No painel de Dados → Botão direito em 'fVendas' → 'Nova Coluna'", code: null },
+      { action: "Digitar a fórmula IF", detail: "A função IF no DAX: IF(condição, valor_se_verdadeiro, valor_se_falso)", code: "FAIXA_VALOR = \n  IF(\n    fVendas[VALOR_VENDA] > 2000,\n    \"Alto Valor\",\n    \"Padrão\"\n  )" },
+      { action: "Confirmar e verificar", detail: "A coluna FAIXA_VALOR aparece na tabela fVendas. Ventas > R$2.000 terão 'Alto Valor'.", code: null },
+      { action: "Verificar na Exibição de Dados", detail: "Clique no ícone de Tabela no painel esquerdo e filtre a coluna FAIXA_VALOR para conferir os resultados", code: null, result: "Coluna calculada adicionada ✓" },
+    ]
+  },
+
+  // =================== BLOCO 5 — GRÁFICOS ===================
+  {
+    section: "Visualizações — Gráficos",
+    sectionIcon: "📊",
+    num: 10,
+    file: "Relatório Power BI",
+    tablePreview: null,
+    text: "Para criar os 3 gráficos principais do projeto: (1) <strong>Vendas por Vendedor</strong>, (2) <strong>Vendas por Categoria de Produto</strong> e (3) <strong>Evolução Mensal de Vendas</strong>, quais visuais são mais adequados respectivamente?",
+    options: [
+      "Gráfico de Pizza, Treemap, Gráfico de Dispersão",
+      "Gráfico de Barras Clusterizado, Gráfico de Colunas, Gráfico de Linhas",
+      "Tabela, Gráfico de Rosca, Cartão",
+      "Mapa, Funil, Medidor"
+    ],
+    correct: 1,
+    steps: [
+      { action: "Gráfico 1 — Vendas por Vendedor (Barras Clusterizadas)", detail: "Visual: Gráfico de Barras Clusterizadas\n• Eixo Y: NOME (dVendedores)\n• Valores: [Total Vendas]\nIdeal para comparar categorias nominais.", code: null },
+      { action: "Como inserir o Gráfico 1", detail: "Painel Visualizações → clique no ícone de Barras Clusterizadas → arraste NOME para Eixo Y → arraste [Total Vendas] para Valores", code: null },
+      { action: "Gráfico 2 — Vendas por Categoria (Colunas)", detail: "Visual: Gráfico de Colunas Clusterizadas\n• Eixo X: CATEGORIA (dProdutos)\n• Valores: [Total Vendas]\nIdeal para comparar poucos grupos.", code: null },
+      { action: "Gráfico 3 — Evolução Mensal (Linhas)", detail: "Visual: Gráfico de Linhas\n• Eixo X: DATA_VENDA (por mês — use hierarquia de data)\n• Valores: [Total Vendas]\nIdeal para tendências ao longo do tempo.", code: null },
+      { action: "Dica: Hierarquia de Datas", detail: "Para o gráfico de linhas funcionar por mês, certifique-se que DATA_VENDA é tipo 'Data'. O Power BI cria automaticamente hierarquia: Ano → Trimestre → Mês → Dia.", code: null },
+      { action: "Formatação básica", detail: "Em cada visual: clique no ícone de pincel → ajuste título, cores e rótulos de dados para deixar o relatório mais profissional.", code: null, result: "3 gráficos criados ✓ Relatório completo!" },
+    ]
+  }
+];
+
+let current = 0;
+let answered = [];
+let totalQ = QUESTIONS.length;
+
+// Init dots
+function initDots() {
+  const container = document.getElementById('step-dots');
+  container.innerHTML = '';
+  for(let i=0; i<totalQ; i++){
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' active':'');
+    d.textContent = i+1;
+    d.id = 'dot-'+i;
+    container.appendChild(d);
+  }
+}
+
+function updateProgress() {
+  const done = answered.length;
+  const pct = Math.round((done/totalQ)*100);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-label').textContent = done+' / '+totalQ+' questões';
+  for(let i=0; i<totalQ; i++){
+    const d = document.getElementById('dot-'+i);
+    if(i < done) d.className = 'dot done';
+    else if(i===current) d.className = 'dot active';
+    else d.className = 'dot';
+  }
+}
+
+function buildTable(preview) {
+  if(!preview) return '';
+  let rows = preview.rows.map(r=>'<tr>'+r.map(c=>`<td>${c}</td>`).join('')+'</tr>').join('');
+  let headers = preview.headers.map(h=>`<th>${h}</th>`).join('');
+  return `<div class="data-preview">
+    <div class="data-preview-title">📋 ${preview.title}</div>
+    <table class="data-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+function renderQuestion(idx) {
+  const q = QUESTIONS[idx];
+  const area = document.getElementById('quiz-area');
+  const fileExt = q.fileType ? `<span class="tag-file">📄 ${q.file}</span>` : '';
+
+  const opts = q.options.map((o,i)=>{
+    const letters = ['A','B','C','D'];
+    return `<button class="opt" onclick="answer(${idx},${i})" id="opt-${idx}-${i}">
+      <span class="opt-letter">${letters[i]}</span>
+      <span class="opt-text">${o}</span>
+    </button>`;
+  }).join('');
+
+  area.innerHTML = `
+    <div class="section-badge">
+      <span class="icon">${q.sectionIcon}</span>
+      ${q.section}
+    </div>
+    <div class="question-card" id="qcard-${idx}">
+      <div class="q-num">Questão ${q.num} de ${totalQ}</div>
+      ${fileExt}
+      ${buildTable(q.tablePreview)}
+      <div class="q-text">${q.text}</div>
+      <div class="options" id="opts-${idx}">${opts}</div>
+    </div>
+    <div id="step-area-${idx}"></div>
+  `;
+  updateProgress();
+}
+
+function answer(qIdx, optIdx) {
+  const q = QUESTIONS[qIdx];
+  const isCorrect = optIdx === q.correct;
+
+  // disable all options
+  const opts = document.querySelectorAll(`#opts-${qIdx} .opt`);
+  opts.forEach((o,i)=>{
+    o.disabled = true;
+    if(i===q.correct) o.classList.add('correct');
+    if(i===optIdx && !isCorrect) o.classList.add('wrong');
+  });
+
+  answered.push({ q: qIdx, correct: isCorrect });
+  updateProgress();
+
+  // feedback
+  const stepArea = document.getElementById(`step-area-${qIdx}`);
+  const feedbackClass = isCorrect ? 'correct' : 'wrong';
+  const feedbackMsg = isCorrect
+    ? '✅ Correto! Muito bem. Confira o passo a passo abaixo.'
+    : `❌ Resposta incorreta. A correta é a opção ${['A','B','C','D'][q.correct]}. Veja o passo a passo:`;
+
+  // Build steps html
+  const stepsHtml = q.steps.map((s,i)=>{
+    const codeBlock = s.code ? `<div class="code-block">${s.code}</div>` : '';
+    const resultTag = s.result ? `<span class="result-tag">${s.result}</span>` : '';
+    return `<div class="step-item" style="animation-delay:${0.1+i*0.1}s">
+      <div class="step-num">${i+1}</div>
+      <div class="step-content">
+        <div class="step-action">${s.action}</div>
+        <div class="step-detail">${s.detail.replace(/\n/g,'<br>')}</div>
+        ${codeBlock}
+        ${resultTag}
+      </div>
+    </div>`;
+  }).join('');
+
+  const isLast = qIdx === totalQ - 1;
+  const btnLabel = isLast ? '🏁 Finalizar Quiz' : 'Próxima Questão →';
+
+  stepArea.innerHTML = `
+    <div class="feedback-bar ${feedbackClass}">${feedbackMsg}</div>
+    <div class="step-panel">
+      <div class="step-header">
+        <div class="step-icon">📋</div>
+        <div>
+          <div class="step-title">Passo a Passo — ${q.section}</div>
+          <div class="step-sub">Como realizar no Power BI Desktop</div>
+        </div>
+      </div>
+      <div class="steps-list">${stepsHtml}</div>
+    </div>
+    <button class="btn-next" onclick="next(${qIdx})">
+      ${btnLabel}
+    </button>
+  `;
+
+  stepArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function next(fromIdx) {
+  const nextIdx = fromIdx + 1;
+  if(nextIdx >= totalQ) {
+    showFinal();
+  } else {
+    current = nextIdx;
+    renderQuestion(nextIdx);
+    document.getElementById('quiz-area').scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function showFinal() {
+  document.getElementById('quiz-area').style.display = 'none';
+  const fs = document.getElementById('final-screen');
+  fs.style.display = 'block';
+  fs.scrollIntoView({ behavior: 'smooth' });
+  launchConfetti();
+}
+
+function revealSurprise() {
+  document.getElementById('surprise-locked').style.display = 'none';
+  const rev = document.getElementById('surprise-revealed');
+  rev.style.display = 'block';
+  launchConfetti(); launchConfetti();
+  startCountdown();
+  setTimeout(()=>{ rev.scrollIntoView({ behavior: 'smooth' }); }, 200);
+}
+
+// ===== COUNTDOWN TO 22:00 =====
+function startCountdown() {
+  function tick() {
+    const now = new Date();
+    const target = new Date();
+    target.setHours(22, 0, 0, 0);
+    const diff = target - now;
+    const el = document.getElementById('countdown-timer');
+    if(!el) return;
+    if(diff <= 0) {
+      el.textContent = '00:00:00';
+      el.style.color = '#d63031';
+      const link = document.getElementById('drive-link');
+      if(link) {
+        link.style.animation = 'none';
+        link.style.background = '#444';
+        link.style.borderColor = '#888';
+        link.style.pointerEvents = 'none';
+        link.innerHTML = '<span style="font-size:52px;">💥</span><span style="font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#aaa;margin-top:4px;">Link Destruído</span>';
+        link.removeAttribute('href');
+      }
+      const dm = document.getElementById('destroyed-msg');
+      if(dm) dm.style.display='block';
+      const bw = document.getElementById('bomb-wrap');
+      if(bw) bw.textContent='💥';
+      return;
+    }
+    const h = Math.floor(diff/3600000).toString().padStart(2,'0');
+    const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
+    const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
+    el.textContent = `${h}:${m}:${s}`;
+    if(diff<600000) el.style.color='#d63031';
+    else if(diff<3600000) el.style.color='#f5a623';
+    setTimeout(tick, 1000);
+  }
+  tick();
+}
+
+// ===== CONFETTI =====
+function launchConfetti() {
+  const colors = ['#004990','#f5a623','#1a9e5c','#0066cc','#ffc93c','#d63031'];
+  for(let i=0; i<60; i++){
+    setTimeout(()=>{
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.left = Math.random()*100+'vw';
+      el.style.top = '-10px';
+      el.style.background = colors[Math.floor(Math.random()*colors.length)];
+      el.style.width = (8+Math.random()*8)+'px';
+      el.style.height = (8+Math.random()*8)+'px';
+      el.style.animationDuration = (2+Math.random()*2)+'s';
+      el.style.borderRadius = Math.random()>0.5 ? '50%' : '2px';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(), 4000);
+    }, i*60);
+  }
+}
+
+// ===== INIT =====
+initDots();
+renderQuestion(0);
+</script>
+</body>
+</html>
